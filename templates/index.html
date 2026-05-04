@@ -13,6 +13,13 @@
         <li><a href="/">HOME PAGE</a></li>
         <li><a href="/about">ABOUT PAGE</a></li>
         <li><a href="/checkout">CHECKOUT PAGE</a></li>
+        <li><a href="/randomness">???</a></li>
+    </ul>
+
+    <ul>
+        {% for flower, details in flowers.items() %}
+            <li>{{ flower }} -- ${{ details["price"] }} (Stock: {{ details["stock"] }})</li>
+        {% endfor %}
     </ul>
 </body>
 </html>
