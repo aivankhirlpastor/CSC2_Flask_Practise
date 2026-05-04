@@ -1,13 +1,20 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+import json
 
 app = Flask("__name__")
 app.secret_key = "your-secret-key"
 
+# functions
+def load_data():
+    with open("data/flowers.json") as file:
+        flowers = json.load(file)
+    return flowers
 
 # routes from url to html template
 @app.route("/")
 def index():
-    return render_template("index.html")
+    flowers = load_data()
+    return render_template("index.html", flowers = flowers)
 
 @app.route("/about")
 def about():
