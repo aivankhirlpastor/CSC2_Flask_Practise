@@ -16,10 +16,18 @@
         <li><a href="/randomness">???</a></li>
     </ul>
 
-    <ul>
-        {% for flower, details in flowers.items() %}
-            <li>{{ flower }} -- ${{ details["price"] }} (Stock: {{ details["stock"] }})</li>
-        {% endfor %}
-    </ul>
+    <form action="{{ url_for('add_to_cart') }}" method="post">
+        <fieldset>
+            <legend for="flower">Select Flowers</legend>
+            <select form="flower" id="flower">
+                {% for flower, details in flowers.items() %}
+                    <option value="{{ flower }}">{{ flower }} - ${{ details["price"] }}</option>
+                {% endfor %}
+            </select>
+            <label for="quantity"></label>
+            <input type="number" name="quantity" id="quantity" value="1" min="1">
+            <button type="submit">Add To Cart</button>
+        </fieldset>
+    </form>
 </body>
 </html>
