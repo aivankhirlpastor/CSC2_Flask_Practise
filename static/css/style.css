@@ -1,0 +1,36 @@
+* {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* headings */
+main > h1, h2 {
+    color: rgb(5, 112, 74);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* === header === */
+header {
+    align-items: center;
+    border-bottom: solid 2px #5b92ff;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+/* header links */
+header nav > a {
+    color: #4f0ec7;
+    font-size: 20px;
+    margin-inline: 10px;
+    text-decoration: none; /* remove underline */
+}
+
+/* media query */
+@media screen and (max-width: 600px) {
+    /* === header === */
+    header {
+        display: block;
+        padding-bottom: 16px;
+        text-align: center;
+    }
+}
