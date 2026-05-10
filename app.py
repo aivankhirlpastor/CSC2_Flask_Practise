@@ -83,6 +83,16 @@ def about():
 def checkout():
     return render_template("checkout.html")
 
+# order history
+@app.route("/order_history")
+def order_history():
+    return render_template("order_history.html")
+
+# invoice
+@app.route("/invoice")
+def invoice():
+    return render_template("invoice.html")
+
 # comes the last
 # if __name__ == 'main': checks if file is being run directly - only runs code if opened directly.
 if __name__ == "__main__":
