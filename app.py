@@ -53,6 +53,21 @@ def add_to_cart():
 
     # return render_template("index1.html")
 
+# remove from the cart
+@app.route("/remove_from_cart/<process_item>")
+def remove_from_cart(process_item):
+    cart = session.get("cart", {})
+
+    if process_item in cart:
+        del cart[process_item]
+        session["cart"] = cart # update session
+        session.modified = True
+        flash(f"{process_item} removed from the cart.")
+    else:
+        flash("Item was not found in the cart")
+
+    return redirect(url_for("index"))
+
 @app.route("/about")
 def about():
     return render_template("about.html")
