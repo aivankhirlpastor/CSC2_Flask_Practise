@@ -19,7 +19,7 @@
     <form action="{{ url_for('add_to_cart') }}" method="post">
         <fieldset>
             <legend for="flower">Select Flowers</legend>
-            <select form="flower" id="flower">
+            <select name="flower" id="flower">
                 {% for flower, details in flowers.items() %}
                     <option value="{{ flower }}">{{ flower }} - ${{ details["price"] }}</option>
                 {% endfor %}
@@ -29,5 +29,29 @@
             <button type="submit">Add To Cart</button>
         </fieldset>
     </form>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flashes">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <h2>Your Cart</h2>
+
+    <!-- at cart session -->
+    {% if cart %}
+        <ul>
+            {% for item, details in cart.items() %}
+                <li>{{ item }}: {{ '%.2f' % details["quantity"] }} x ${{ details["price"] }} = ${{ details["quantity"] * details["price"] }}</li>
+                <a href="{{ url_for('remove_from_cart', process_item = item) }}"></a>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Your cart is empty.</p>
+    {% endif %}
+
 </body>
 </html>

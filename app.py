@@ -6,15 +6,52 @@ app.secret_key = "your-secret-key"
 
 # functions
 def load_data():
-    with open("data/flowers.json") as file:
+    # open multiple files
+    with open("data/flowers.json") as file, open("data/addons.json") as adds:
         flowers = json.load(file)
-    return flowers
+        addons = json.load(adds)
+
+    # return flowers
+    return flowers, addons
 
 # routes from url to html template
 @app.route("/")
 def index():
-    flowers = load_data()
-    return render_template("index.html", flowers = flowers)
+    # tuple variables
+    flowers, addons = load_data()
+
+    # prepare stored cart session
+    cart = session.get("cart", {})
+
+    return render_template("index.html", flowers = flowers, addons = addons, cart = cart)
+
+# index1.html
+@app.route('/add_to_cart', methods=['POST'])
+def add_to_cart():
+    flower = request.form['flower'] # get selected "flower" name
+    quantity = int(request.form["quantity"])
+    flowers, addons = load_data() # load multiple variables, tuple variables 
+    cart = session.get("cart", {})
+
+    # not in (i.e. run if not found)
+    if flower not in flowers:
+        flash("Invalid flower selected.")
+        return redirect(url_for("index"))
+
+    if flower in cart:
+        cart[flower]["quantity"] += quantity # add existing quantity
+    else:
+        cart[flower] = {
+            "price": flowers[flower]["price"],
+            "quantity": quantity
+        }
+    
+    session["cart"] = cart # update session
+    session.modified = True
+    flash(f"{quantity} {flower}(s) added to cart.")
+    return redirect(url_for("index"))
+
+    # return render_template("index1.html")
 
 @app.route("/about")
 def about():
