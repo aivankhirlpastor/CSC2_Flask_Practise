@@ -14,6 +14,10 @@ def load_data():
     # return flowers
     return flowers, addons
 
+def calculate_total(cart):
+    total = sum(item['price'] * item['quantity'] for item in cart.values())
+    return total
+
 # routes from url to html template
 @app.route("/")
 def index():
@@ -23,7 +27,10 @@ def index():
     # prepare stored cart session
     cart = session.get("cart", {})
 
-    return render_template("index.html", flowers = flowers, addons = addons, cart = cart)
+    # calculate the overall total cost of all the items
+    total = calculate_total(cart)
+
+    return render_template("index.html", flowers = flowers, addons = addons, cart = cart, total_cost = total)
 
 # index1.html
 @app.route('/add_to_cart', methods=['POST'])
@@ -62,7 +69,7 @@ def remove_from_cart(process_item):
         del cart[process_item]
         session["cart"] = cart # update session
         session.modified = True
-        flash(f"{process_item} removed from the cart.")
+        flash(f"Removed all {process_item.capitalize()} from the cart.")
     else:
         flash("Item was not found in the cart")
 

@@ -17,5 +17,10 @@
     "Daisy": {
         "price": 25,
         "stock": 38
+    },
+
+    "Orchids": {
+        "price": 35,
+        "stock": 20
     }
 }
