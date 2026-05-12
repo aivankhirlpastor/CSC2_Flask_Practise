@@ -16,11 +16,11 @@ def load_data():
 
 # calculate the total cost of carts and add-ons
 def calculate_total(cart, add_ons):
-    total = sum(item['price'] * item['quantity'] for item in cart.values())
-    total += sum(add_on_item for add_on_item in add_ons.values())
+    cart_total = sum(item['price'] * item['quantity'] for item in cart.values())
+    addon_total = sum(add_on_item for add_on_item in add_ons.values())
 
     # returning the total cost
-    return total
+    return cart_total + addon_total, cart_total, addon_total
 
 # routes from url to html template
 @app.route("/")
@@ -34,9 +34,12 @@ def index():
     print(session_addons)
 
     # calculate the overall total cost of all the items
-    total = calculate_total(cart, session_addons)
+    total, flower_subtotal, addon_subtotal = calculate_total(cart, session_addons)
 
-    return render_template("index.html", flowers = flowers, addons = addons, cart = cart, total_cost = total, session_addons = session_addons)
+    return render_template("index.html",
+                           flowers = flowers, addons = addons,
+                           cart = cart, total_cost = total, session_addons = session_addons,
+                           flower_subtotal = flower_subtotal, addon_subtotal = addon_subtotal)
 
 # index1.html
 @app.route('/add_to_cart', methods=['POST'])
@@ -80,6 +83,17 @@ def remove_from_cart(process_item):
         flash("Item was not found in the cart")
 
     return redirect(url_for("index"))
+
+# cancel order
+@app.route("/cancel_order")
+def cancel_order():
+    session.pop("cart", None)
+    session.pop("selected_addons", None)
+    session.modified = True
+
+    flash("You cancelled your order.")
+    return redirect(url_for("index"))
+
 
 @app.route("/about")
 def about():
