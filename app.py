@@ -26,11 +26,13 @@ def index():
 
     # prepare stored cart session
     cart = session.get("cart", {})
+    session_addons = session.get("selected_addons", {})
+    print(session_addons)
 
     # calculate the overall total cost of all the items
     total = calculate_total(cart)
 
-    return render_template("index.html", flowers = flowers, addons = addons, cart = cart, total_cost = total)
+    return render_template("index.html", flowers = flowers, addons = addons, cart = cart, total_cost = total, session_addons = session_addons)
 
 # index1.html
 @app.route('/add_to_cart', methods=['POST'])
@@ -82,6 +84,35 @@ def about():
 @app.route("/checkout")
 def checkout():
     return render_template("checkout.html")
+
+# selected addon
+@app.route("/select_addon", methods=["POST"])
+def select_addon():
+    selected_addons = {}
+    _, addons = load_data() # we only need addons, not flowers (_)
+
+    # checkboxes, where multiple lists are selected, use: .getlist('~')
+    selected_keys = request.form.getlist("addons_list")
+
+    # loop on selected keys or addons as checklist, leave if nothing has been selected
+    for current_add in selected_keys:
+        if current_add in addons:
+            selected_addons[current_add] = float(addons[current_add]["price"])
+            print(selected_addons[current_add])
+
+    # flash message
+    if len(selected_keys):
+        flash(f"{len(selected_keys)} {"Add-ons" if len(selected_keys) == 2 else "Add-on"}  added to cart.") # message
+    else:
+        flash(f"No add-ons selected.") # failed message
+
+
+    session["selected_addons"] = selected_addons
+    session.modified = True
+
+    print(session)
+
+    return redirect(url_for("index"))
 
 # order history
 @app.route("/order_history")
