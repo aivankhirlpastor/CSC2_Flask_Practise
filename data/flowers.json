@@ -22,5 +22,10 @@
     "Orchids": {
         "price": 35,
         "stock": 20
+    },
+
+    "Foxglove": {
+        "price": 40,
+        "stock": 33
     }
 }
