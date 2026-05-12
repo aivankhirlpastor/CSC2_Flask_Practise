@@ -14,8 +14,12 @@ def load_data():
     # return flowers
     return flowers, addons
 
-def calculate_total(cart):
+# calculate the total cost of carts and add-ons
+def calculate_total(cart, add_ons):
     total = sum(item['price'] * item['quantity'] for item in cart.values())
+    total += sum(add_on_item for add_on_item in add_ons.values())
+
+    # returning the total cost
     return total
 
 # routes from url to html template
@@ -30,7 +34,7 @@ def index():
     print(session_addons)
 
     # calculate the overall total cost of all the items
-    total = calculate_total(cart)
+    total = calculate_total(cart, session_addons)
 
     return render_template("index.html", flowers = flowers, addons = addons, cart = cart, total_cost = total, session_addons = session_addons)
 
