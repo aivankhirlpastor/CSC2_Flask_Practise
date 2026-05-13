@@ -5,6 +5,31 @@
 {% block content %}
 <body>
     <h1>Invoice</h1>
-    <p>This page will show the customer's invoice after the checkout.</p>
+    <p>Invoice Number: {{ invoice_number }}</p>
+    <p>Customer Name: {{ customer_name }}</p>
+    <p>Date: {{ invoice_date }}</p>
+
+    <h2>Items</h2>
+    
+    {% if get_flower %}
+        <ul>
+            {% for flowers, data in get_flower.items() %}
+                <li>{{ flowers }}: {{ data["quantity"] }} x ${{ '%.2f' % data["price"] }} = {{ data["price"] * data["quantity"] }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <h2>Addons</h2>
+    {% if get_addon %}
+        <ul>
+            {% for add_ons, data in get_addon.items() %}
+                <li>{{ add_ons }}: ${{ '%.2f' % data }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <h2>Total: ${{ '%.2f' % total[0] }}</h2>
+
+    <a href="{{ url_for('index') }}">Back To Shop</a>
 </body>
 {% endblock %}

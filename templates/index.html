@@ -43,7 +43,7 @@
     {% endwith %}
 
     <h2>-</h2>
-    <form>
+    <form action="{{ url_for('checkout') }}" method="post">
         <fieldset>
             <legend>My Cart</legend>
             <!-- at cart session -->
@@ -72,6 +72,12 @@
         
             <h4>Total: ${{ '%.2f' % total_cost }}</h4>
 
+            <div id="customer-name-block">
+                <label for="customer_name_input">Name:</label>
+                <input type="text" name="customer_name_input" id="customer_name_input">
+            </div>
+
+            <button type="submit">Checkout</button>
             <button type="submit" formaction="{{ url_for('cancel_order') }}" onclick="return confirm('Are you sure you want to cancel your order?')">Cancel Order</button>
         </fieldset>
     </form>

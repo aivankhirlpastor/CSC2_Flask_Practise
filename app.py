@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-import json
+import json, datetime
 
 app = Flask("__name__")
 app.secret_key = "your-secret-key"
@@ -84,12 +84,16 @@ def remove_from_cart(process_item):
 
     return redirect(url_for("index"))
 
-# cancel order
-@app.route("/cancel_order")
-def cancel_order():
+# remove cart function
+def remove_all_items():
     session.pop("cart", None)
     session.pop("selected_addons", None)
     session.modified = True
+
+# cancel order
+@app.route("/cancel_order", methods=['POST'])
+def cancel_order():
+    remove_all_items()
 
     flash("You cancelled your order.")
     return redirect(url_for("index"))
@@ -99,9 +103,36 @@ def cancel_order():
 def about():
     return render_template("about.html")
 
-@app.route("/checkout")
+@app.route("/checkout", methods=["POST"])
 def checkout():
-    return render_template("checkout.html")
+    # strip = leading whitespace removed | title = capitalised words
+    customer_name = request.form['customer_name_input'].strip().title()
+
+    # Check if the customer name is appropriately entered, otherwise display the flask message and return to home page.
+    if not customer_name:
+        flash("Please enter your name to proceed to checkout.")
+        return redirect(url_for('index'))
+
+    # get cart session
+    invoice_flower = session.get("cart", {})
+    invoice_addons = session.get("selected_addons", {})
+
+    if not invoice_flower and not invoice_addons:
+        flash("Your cart is empty.")
+        return redirect(url_for('index'))
+    
+    # fill up basics
+    total = calculate_total(invoice_flower, invoice_addons) # get the calculation
+    invoice_date = datetime.datetime.now().strftime("%Y-%m-%d, %H:%M:%S") # date and time from import
+    invoice_number = f"INV_{customer_name.replace(' ', '_')}_{invoice_date}"
+
+    remove_all_items() # remove all items in checkout
+
+    return render_template("invoice.html", customer_name = customer_name,
+                           get_flower = invoice_flower, get_addon = invoice_addons,
+                           invoice_date = invoice_date, invoice_number = invoice_number,
+                           total = total)
+
 
 # selected addon
 @app.route("/select_addon", methods=["POST"])
