@@ -69,6 +69,12 @@ def add_to_cart():
 
     # return render_template("index1.html")
 
+# remove cart function
+def remove_all_items():
+    session.pop("cart", None)
+    session.pop("selected_addons", None)
+    session.modified = True
+
 # remove from the cart
 @app.route("/remove_from_cart/<process_item>")
 def remove_from_cart(process_item):
@@ -83,12 +89,6 @@ def remove_from_cart(process_item):
         flash("Item was not found in the cart")
 
     return redirect(url_for("index"))
-
-# remove cart function
-def remove_all_items():
-    session.pop("cart", None)
-    session.pop("selected_addons", None)
-    session.modified = True
 
 # cancel order
 @app.route("/cancel_order", methods=['POST'])
