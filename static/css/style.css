@@ -25,6 +25,14 @@ header nav > a {
     text-decoration: none; /* remove underline */
 }
 
+#customer-name-block {
+    margin-block: 20px;
+}
+
+#customer-name-block label {
+    display: block;
+}
+
 /* media query */
 @media screen and (max-width: 600px) {
     /* === header === */
