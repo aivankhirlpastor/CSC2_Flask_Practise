@@ -10,7 +10,6 @@
     <p>Date: {{ invoice_date }}</p>
 
     <h2>Items</h2>
-    
     {% if get_flower %}
         <ul>
             {% for flowers, data in get_flower.items() %}
@@ -28,7 +27,15 @@
         </ul>
     {% endif %}
 
-    <h2>Total: ${{ '%.2f' % total[0] }}</h2>
+    <h2>Summary</h2>
+    {% if discounted %}
+        <p>Subtotal: ${{ '%.2f' % total }}</p>
+        <span>Discount (10%): -${{ discounted_deduct }}</span>
+        <h3>Total: ${{ '%.2f' % discounted }}</h3>
+    {% else %}
+        <h3>Total: ${{ '%.2f' % total }}</h3>
+    {% endif %}
+    <p></p>
 
     <a href="{{ url_for('index') }}">Back To Shop</a>
 </body>

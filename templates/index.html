@@ -69,8 +69,16 @@
                 </ul>
                 <p>Flower Subtotal: ${{ '%.2f' % addon_subtotal }}</p>
             {% endif %}
+
+            <!-- subtotal / total -->
+            {% if total_cost > 180 %}
+                <h4>Subtotal: ${{ '%.2f' % total_cost }}</h4>
+                <p>10% Discount Applied</p>
+                <h4 class="discount">Total: ${{ '%.2f' % discounted }}</h4>
+            {% else %}
+                <h3>Total: ${{ '%.2f' % total_cost }}</h3>
+            {% endif %}
         
-            <h4>Total: ${{ '%.2f' % total_cost }}</h4>
 
             <div id="customer-name-block">
                 <label for="customer_name_input">Name:</label>
