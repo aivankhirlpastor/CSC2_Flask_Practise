@@ -170,7 +170,6 @@ def checkout():
     print(f"Total: {total}\n")
 
     # generate invoice file
-
     invoice_filename = f"INV_{customer_name.replace(' ', '_')}_{datetime.datetime.now().strftime("%Y-%m-%d %H.%M.%S")}.txt"
     
     with open(invoice_filename, 'w') as f:
