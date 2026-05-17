@@ -13,7 +13,7 @@
     {% if get_flower %}
         <ul>
             {% for flowers, data in get_flower.items() %}
-                <li>{{ flowers }}: {{ data["quantity"] }} x ${{ '%.2f' % data["price"] }} = {{ data["price"] * data["quantity"] }}</li>
+                <li>{{ flowers }}: {{ data["quantity"] }} x ${{ '%.2f' % data["price"] }} = ${{ '%.2f' % (data["price"] * data["quantity"]) }}</li>
             {% endfor %}
         </ul>
     {% endif %}
@@ -30,7 +30,7 @@
     <h2>Summary</h2>
     {% if discounted %}
         <p>Subtotal: ${{ '%.2f' % total }}</p>
-        <span>Discount (10%): -${{ discounted_deduct }}</span>
+        <span>Discount (10%): -${{ '%.2f' % discounted_deduct }}</span>
         <h3>Total: ${{ '%.2f' % discounted }}</h3>
     {% else %}
         <h3>Total: ${{ '%.2f' % total }}</h3>
