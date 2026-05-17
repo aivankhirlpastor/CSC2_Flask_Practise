@@ -55,7 +55,19 @@ def index():
     # prepare stored cart session
     cart = session.get("cart", {})
     session_addons = session.get("selected_addons", {})
-    print(session_addons)
+
+    retrieve_cart = cart
+    # checking for the stock
+    for flower_item, o in list(retrieve_cart.items()):
+
+        print(flower_item)
+        # if the stock runs out
+        if flowers[flower_item]["stock"] <= 0:
+            flash(f"Reminder: {flower_item} was removed from the cart due to out of stock.")
+            del cart[flower_item]
+
+            session["cart"] = cart # update session
+            session.modified = True
 
     # calculate the overall total cost of all the items
     total, flower_subtotal, addon_subtotal, discounted_price = calculate_total(cart, session_addons)
@@ -74,6 +86,10 @@ def add_to_cart():
     flowers, addons = load_data() # load multiple variables, tuple variables 
     cart = session.get("cart", {})
 
+    # some cores for validation
+    original_quantity = cart[flower]["quantity"] if flower in cart else quantity # used for validating remaining stocks
+    is_not_in_cart_yet = False
+
     # not in (i.e. run if not found)
     if flower not in flowers:
         flash("Invalid flower selected.")
@@ -82,14 +98,34 @@ def add_to_cart():
     if flower in cart:
         cart[flower]["quantity"] += quantity # add existing quantity
     else:
+        is_not_in_cart_yet = True
         cart[flower] = {
             "price": flowers[flower]["price"],
             "quantity": quantity
         }
+
+    # check if there are stocks remaining within the flower
+    if flowers[flower]["stock"] == 0:
+        flash(f"Sorry, but {flower} runs out of stock.")
+        del cart[flower]
+        return redirect(url_for("index"))
     
+    # Check if it exceeded the amount of stock left
+    elif cart[flower]["quantity"] > flowers[flower]["stock"]:
+        cart[flower]["quantity"] = flowers[flower]["stock"] # overrides the remaining stock
+
+        # if in the cart
+        if not is_not_in_cart_yet:
+            stock_dif = flowers[flower]["stock"] - original_quantity
+
+            flash(f"You have exceeded the quantity on a flower than there are left. {stock_dif if stock_dif else "No"} {flower}(s) were added to cart.")
+        else:
+            flash(f"You have exceeded the quantity on a flower than there are left, so {flowers[flower]["stock"]} {flower}(s) were added to cart.")
+    else:
+        flash(f"{quantity} {flower}(s) added to cart.")
+
     session["cart"] = cart # update session
     session.modified = True
-    flash(f"{quantity} {flower}(s) added to cart.")
     return redirect(url_for("index"))
 
     # return render_template("index1.html")
@@ -161,7 +197,7 @@ def checkout():
         cursor.execute("""
             INSERT INTO orders (invoice_number, customer_name, items, addons, total)
             VALUES (?, ?, ?, ?, ?)
-        """, (invoice_number, customer_name, json.dumps(invoice_flower), json.dumps(invoice_addons), total - (total * 0.1)))
+        """, (invoice_number, customer_name, json.dumps(invoice_flower), json.dumps(invoice_addons), total - (total * 0.1) if discounted_price else total))
 
         conn.commit() # Save changes to the database
 
@@ -195,11 +231,30 @@ def checkout():
                 f.write(f"{addon}: ${data:.2f}\n")
 
         # total
-        f.write(f"Subtotal: ${total:.2f}")
-        f.write(f"Discount: (10%): -${total * 0.1}\n\n")
-        f.write(f"Total: ${total - (total * 0.1)}")
+        f.write(f"\nSubtotal: ${total:.2f}\n")
+        f.write(f"Discount: (10%): -${total * 0.1:.2f}\n\n")
+        f.write(f"Total: ${total - (total * 0.1):.2f}")
 
-    # 7. Display invoice on confirmation page
+    # 7. Update Stocks
+
+    # fetch existing flower.json
+    with open("data/flowers.json", "r") as fl_file:
+        fetched_flower_data = json.load(fl_file)
+
+    # define from each of the items of 'invoice_flower'
+    for flower_name, details in invoice_flower.items():
+        if flower_name in fetched_flower_data:
+            fetched_flower_data[flower_name]["stock"] -= details["quantity"]
+
+            # resets to 0 to prevent negative miscounts
+            if fetched_flower_data[flower_name]["stock"] < 0:
+                fetched_flower_data[flower_name]["stock"] = 0
+
+    # opens the file in write mode
+    with open("data/flowers.json", "w") as fl_file:
+        json.dump(fetched_flower_data, fl_file, indent=4)
+
+    # 8. Display invoice on confirmation page
     return render_template("invoice.html", customer_name = customer_name,
                            get_flower = invoice_flower, get_addon = invoice_addons,
                            invoice_date = invoice_date, invoice_number = invoice_number,
