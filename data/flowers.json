@@ -1,31 +1,26 @@
 {
     "Rose": {
         "price": 10,
-        "stock": 14
+        "stock": 44
     },
-
     "Tulip": {
         "price": 12,
-        "stock": 15
+        "stock": 36
     },
-
     "Lily": {
         "price": 16,
-        "stock": 16
+        "stock": 39
     },
-
     "Daisy": {
         "price": 25,
-        "stock": 38
+        "stock": 50
     },
-
     "Orchids": {
         "price": 35,
-        "stock": 20
+        "stock": 64
     },
-
     "Foxglove": {
         "price": 40,
-        "stock": 33
+        "stock": 49
     }
 }
