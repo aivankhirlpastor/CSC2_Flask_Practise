@@ -33,6 +33,14 @@ header nav > a {
     display: block;
 }
 
+/* stock level */
+span.stock-level {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 7px;
+    opacity: 75%;
+}
+
 /* media query */
 @media screen and (max-width: 600px) {
     /* === header === */
