@@ -254,6 +254,8 @@ def checkout():
     with open("data/flowers.json", "w") as fl_file:
         json.dump(fetched_flower_data, fl_file, indent=4)
 
+    print()
+
     # 8. Display invoice on confirmation page
     return render_template("invoice.html", customer_name = customer_name,
                            get_flower = invoice_flower, get_addon = invoice_addons,
@@ -294,7 +296,39 @@ def select_addon():
 # order history
 @app.route("/order_history")
 def order_history():
-    return render_template("order_history.html")
+
+    with sqlite3.connect("flower_shop.db") as conn:
+        cursor = conn.cursor()
+
+        # load past data "SELECT * FROM"
+        cursor.execute("SELECT * FROM orders ORDER BY date DESC")
+        rows = cursor.fetchall() # obtain all data from the query in rows
+        # print(rows)
+        orders = [] # array/list
+
+        for row in rows:
+            orders.append({
+                "order_id": row[0],
+                "invoice_number": row[1],
+                "customer_name": row[2], 
+                "items": json.loads(row[3]),
+                "addons": json.loads(row[4]),
+                "total_cost": row[5],
+                "date": row[6]
+            })
+
+    return render_template("order_history.html", order_lists = orders)
+
+# delete an order from the database by ID.
+@app.route("/cancel_saved_order/<int:order_id>", methods=["POST"])
+def cancel_saved_order(order_id):
+    with sqlite3.connect("flower_shop.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM orders WHERE order_id = ?", (order_id,)) # delete the selected id
+        conn.commit() # commit changes to the file
+
+    flash("Order deleted.")
+    return redirect(url_for("order_history"))
 
 # invoice
 @app.route("/invoice")
