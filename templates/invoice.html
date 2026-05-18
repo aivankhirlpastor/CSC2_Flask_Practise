@@ -13,7 +13,7 @@
     {% if get_flower %}
         <ul>
             {% for flowers, data in get_flower.items() %}
-                <li>{{ flowers }}: {{ data["quantity"] }} x ${{ '%.2f' % data["price"] }} = ${{ '%.2f' % (data["price"] * data["quantity"]) }}</li>
+                <li>{{ flowers }}: <b>{{ data["quantity"] }}</b> x ${{ '%.2f' % data["price"] }} = ${{ '%.2f' % (data["price"] * data["quantity"]) }}</li>
             {% endfor %}
         </ul>
     {% endif %}
