@@ -48,11 +48,13 @@
             <legend>My Cart</legend>
             <!-- at cart session -->
             {% if cart %}
-                <ul>
+                <ul class="flower-carts">
                     {% for item, details in cart.items() %}
-                        <li>{{ item }}: {{ details["quantity"] }} x ${{ '%.2f' % details["price"] }} = ${{ details["quantity"] * details["price"] }}</li>
-                        <span class="stock-level">Stocks Left: <b>{{ flowers[item]["stock"] }}</b></span>
-                        <a href="{{ url_for('remove_from_cart', process_item = item) }}">[Remove]</a>
+                        <li>
+                            {{ item }}: {{ details["quantity"] }} x ${{ '%.2f' % details["price"] }} = ${{ details["quantity"] * details["price"] }}
+                            <span class="stock-level">Stocks Left: <b>{{ flowers[item]["stock"] }}</b></span>
+                            <a href="{{ url_for('remove_from_cart', process_item = item) }}">[Remove]</a>
+                        </li>
                     {% endfor %}
                 </ul>
         
