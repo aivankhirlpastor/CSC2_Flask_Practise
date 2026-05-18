@@ -33,12 +33,56 @@ header nav > a {
     display: block;
 }
 
+.flower-carts li {
+    margin-bottom: 12px;
+}
+
 /* stock level */
 span.stock-level {
     display: block;
     font-size: 14px;
     margin-bottom: 7px;
     opacity: 75%;
+}
+
+/* table styling for order history */
+table {
+    width: 100%; /* full width */
+    border-collapse: collapse;
+    background-color: #FFFFFF;
+}
+
+th, td {
+    padding: 12px;
+    border: 1px solid #dddddd;
+    vertical-align: top;
+}
+
+/* heading */
+th {
+    background-color: #f0f0f0;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+td ul {
+    padding-left: 15px;
+}
+
+/* lists on flowers and addons */
+td ul li {
+    margin-block: 10px;
+}
+
+td ul li > .table-item {
+    opacity: 60%;
+}
+
+td ul li > .quantity-and-cost {
+    display: block;
+    font-size: 13px;
 }
 
 /* media query */
