@@ -19,7 +19,7 @@
     </form>
     <!-- addons form -->
     <form action="{{ url_for('select_addon') }}" method="post">
-        <fieldset>
+        <fieldset class="add-on-options">
             <legend>Add-ons</legend>
             {% for addon, data in addons.items() %}
                 <label>
@@ -42,7 +42,6 @@
         {% endif %}
     {% endwith %}
 
-    <h2>-</h2>
     <form action="{{ url_for('checkout') }}" method="post">
         <fieldset>
             <legend>My Cart</legend>
@@ -58,7 +57,9 @@
                     {% endfor %}
                 </ul>
         
-                <p>Flower Subtotal: ${{ '%.2f' % flower_subtotal }}</p>
+                <p class="subtotal">Flower Subtotal: ${{ '%.2f' % flower_subtotal }}</p>
+
+                <hr>
             {% else %}
                 <p>Your cart is empty.</p>
             {% endif %}
@@ -70,7 +71,10 @@
                         <li>{{ adds }} - ${{ '%.2f'% dataset }}</li>
                     {% endfor %}
                 </ul>
-                <p>Flower Subtotal: ${{ '%.2f' % addon_subtotal }}</p>
+
+                <p class="subtotal">Add-On Subtotal: ${{ '%.2f' % addon_subtotal }}</p>
+
+                <hr>
             {% endif %}
 
             <!-- subtotal / total -->

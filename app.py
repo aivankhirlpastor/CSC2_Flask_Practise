@@ -5,15 +5,21 @@ app = Flask("__name__")
 app.secret_key = "your-secret-key"
 
 # FUNCTIONS <-------------------->
+
+# load json file
 def load_data():
-    # open multiple files
-    with open("data/flowers.json") as file, open("data/addons.json") as adds:
-        flowers = json.load(file)
-        addons = json.load(adds)
+    try:
+        # open multiple files
+        with open("data/flowers.json") as file, open("data/addons.json") as adds:
+            flowers = json.load(file)
+            addons = json.load(adds)
 
-    # return flowers
-    return flowers, addons
-
+        # return flowers
+        return flowers, addons
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print("Error loading data:", e)
+        return {}, {}
+    
 # calculate the total cost of carts and add-ons
 def calculate_total(cart, add_ons):
     discount_applied = False
@@ -27,7 +33,7 @@ def calculate_total(cart, add_ons):
     # returning the total cost
     return cart_total + addon_total, cart_total, addon_total, discount_applied
 
-# load database
+# load the flower_shop.db database
 def initialise_database():
     with sqlite3.connect("flower_shop.db") as conn:
         cursor = conn.cursor()
@@ -59,8 +65,6 @@ def index():
     retrieve_cart = cart
     # checking for the stock
     for flower_item, o in list(retrieve_cart.items()):
-
-        print(flower_item)
         # if the stock runs out
         if flowers[flower_item]["stock"] <= 0:
             flash(f"Reminder: {flower_item} was removed from the cart due to out of stock.")
@@ -189,23 +193,28 @@ def checkout():
     invoice_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") # date and time from import
     invoice_number = f"INV_{customer_name.replace(' ', '_')}_{invoice_date}"
 
-    remove_all_items() # remove all items in checkout
-
     # 6. Save order to SQLite database
-    with sqlite3.connect("flower_shop.db") as conn:
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO orders (invoice_number, customer_name, items, addons, total)
-            VALUES (?, ?, ?, ?, ?)
-        """, (invoice_number, customer_name, json.dumps(invoice_flower), json.dumps(invoice_addons), total - (total * 0.1) if discounted_price else total))
+    try:
+        with sqlite3.connect("flower_shop.db") as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO orders (invoice_number, customer_name, items, addons, total)
+                VALUES (?, ?, ?, ?, ?)
+            """, (invoice_number, customer_name, json.dumps(invoice_flower), json.dumps(invoice_addons), total - (total * 0.1) if discounted_price else total))
 
-        conn.commit() # Save changes to the database
+            conn.commit() # Save changes to the database
+    except sqlite3.Error as e:
+        flash("Sorry, but we can't process your order right now: Database error occurred.")
+        print("SQLite error:", e)
 
-    print(f"\nSaved order from: {customer_name}")
-    print(f"{invoice_flower}")
-    print(f"Total: {total}\n")
+        return redirect(url_for("index"))
 
-    # generate invoice file
+
+    # print(f"\nSaved order from: {customer_name}")
+    # print(f"{invoice_flower}")
+    # print(f"Total: {total}\n")
+
+    # 7. Generate Invoice File
     invoice_filename = f"INV_{customer_name.replace(' ', '_')}_{datetime.datetime.now().strftime("%Y-%m-%d %H.%M.%S")}.txt"
     
     with open(invoice_filename, 'w') as f:
@@ -236,25 +245,32 @@ def checkout():
         f.write(f"Total: ${total - (total * 0.1):.2f}")
 
     # 7. Update Stocks
+    try:
+        # fetch existing flower.json
+        with open("data/flowers.json", "r") as fl_file:
+            fetched_flower_data = json.load(fl_file)
 
-    # fetch existing flower.json
-    with open("data/flowers.json", "r") as fl_file:
-        fetched_flower_data = json.load(fl_file)
+        # define from each of the items of 'invoice_flower'
+        for flower_name, details in invoice_flower.items():
+            if flower_name in fetched_flower_data:
+                fetched_flower_data[flower_name]["stock"] -= details["quantity"]
 
-    # define from each of the items of 'invoice_flower'
-    for flower_name, details in invoice_flower.items():
-        if flower_name in fetched_flower_data:
-            fetched_flower_data[flower_name]["stock"] -= details["quantity"]
-
-            # resets to 0 to prevent negative miscounts
-            if fetched_flower_data[flower_name]["stock"] < 0:
-                fetched_flower_data[flower_name]["stock"] = 0
+                # resets to 0 to prevent negative miscounts
+                if fetched_flower_data[flower_name]["stock"] < 0:
+                    fetched_flower_data[flower_name]["stock"] = 0
+    except (OSError) as e:
+        flash("Could not update stock")
+        print("Error updating the stock:", e)
 
     # opens the file in write mode
-    with open("data/flowers.json", "w") as fl_file:
-        json.dump(fetched_flower_data, fl_file, indent=4)
+    try:
+        with open("data/flowers.json", "w") as fl_file:
+            json.dump(fetched_flower_data, fl_file, indent=4)
+    except (OSError) as e:
+        flash("Could not generate invoice file.")
+        print("Error writing invoice:", e)
 
-    print()
+    remove_all_items() # remove all items in checkout
 
     # 8. Display invoice on confirmation page
     return render_template("invoice.html", customer_name = customer_name,
@@ -277,7 +293,6 @@ def select_addon():
     for current_add in selected_keys:
         if current_add in addons:
             selected_addons[current_add] = float(addons[current_add]["price"])
-            print(selected_addons[current_add])
 
     # flash message
     if len(selected_keys):
@@ -289,21 +304,18 @@ def select_addon():
     session["selected_addons"] = selected_addons
     session.modified = True
 
-    print(session)
-
     return redirect(url_for("index"))
 
 # order history
 @app.route("/order_history")
 def order_history():
-
+    # create table with database
     with sqlite3.connect("flower_shop.db") as conn:
         cursor = conn.cursor()
-
+        
         # load past data "SELECT * FROM"
         cursor.execute("SELECT * FROM orders ORDER BY date DESC")
         rows = cursor.fetchall() # obtain all data from the query in rows
-        # print(rows)
         orders = [] # array/list
 
         for row in rows:
@@ -327,7 +339,7 @@ def cancel_saved_order(order_id):
         cursor.execute("DELETE FROM orders WHERE order_id = ?", (order_id,)) # delete the selected id
         conn.commit() # commit changes to the file
 
-    flash("Order deleted.")
+    flash("Invoice deleted.")
     return redirect(url_for("order_history"))
 
 # invoice
