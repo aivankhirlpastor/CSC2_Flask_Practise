@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import json, datetime, sqlite3
+import os
 
 app = Flask("__name__")
 app.secret_key = "your-secret-key"
@@ -190,7 +191,7 @@ def checkout():
     
     # 4-5. Calculate Total + Fill Up Invoice Number and Date
     total, _1, _2, discounted_price = calculate_total(invoice_flower, invoice_addons) # get the calculation
-    invoice_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") # date and time from import
+    invoice_date = datetime.datetime.now().strftime("%Y-%m-%d %H.%M.%S") # date and time from import
     invoice_number = f"INV_{customer_name.replace(' ', '_')}_{invoice_date}"
 
     # 6. Save order to SQLite database
@@ -215,7 +216,7 @@ def checkout():
     # print(f"Total: {total}\n")
 
     # 7. Generate Invoice File
-    invoice_filename = f"INV_{customer_name.replace(' ', '_')}_{datetime.datetime.now().strftime("%Y-%m-%d %H.%M.%S")}.txt"
+    invoice_filename = f"{invoice_number}.txt"
     
     with open(invoice_filename, 'w') as f:
         # with open(f"{invoice_number}.txt", "w") as f:
@@ -332,10 +333,21 @@ def order_history():
     return render_template("order_history.html", order_lists = orders)
 
 # delete an order from the database by ID.
-@app.route("/cancel_saved_order/<int:order_id>", methods=["POST"])
-def cancel_saved_order(order_id):
+@app.route("/cancel_saved_order/<int:order_id><string:invoice_number>", methods=["POST"])
+def cancel_saved_order(order_id, invoice_number):
     with sqlite3.connect("flower_shop.db") as conn:
         cursor = conn.cursor()
+
+        # delete invoice text file using os
+        try:
+            if os.path.isfile(f"{invoice_number}.txt"):
+                os.remove(f"{invoice_number}.txt")
+
+        except PermissionError:
+            print("\33[91mPermission denied. The process cannot delete the invoice file text.\33[0m")
+        except OSError as delete_error:
+            print("\33[91mSomething went wrong:\33[0m", delete_error)
+
         cursor.execute("DELETE FROM orders WHERE order_id = ?", (order_id,)) # delete the selected id
         conn.commit() # commit changes to the file
 
