@@ -60,8 +60,6 @@
                 <p class="subtotal">Flower Subtotal: ${{ '%.2f' % flower_subtotal }}</p>
 
                 <hr>
-            {% else %}
-                <p>Your cart is empty.</p>
             {% endif %}
         
             <!-- at addon session -->
@@ -75,6 +73,11 @@
                 <p class="subtotal">Add-On Subtotal: ${{ '%.2f' % addon_subtotal }}</p>
 
                 <hr>
+            {% endif %}
+
+            <!-- Message of empty carts -->
+            {% if not (cart or session_addons) %}
+                <p>Your cart is empty.</p>
             {% endif %}
 
             <!-- subtotal / total -->
