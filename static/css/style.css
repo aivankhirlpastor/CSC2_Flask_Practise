@@ -6,7 +6,7 @@
 /* button styling */
 button {
     border: none;
-    background-color: #12589a;
+    background-color: #047f5c;
     color: #FFFFFF;
 }
 
@@ -40,7 +40,7 @@ fieldset {
 }
 
 fieldset :is(select, input, button) {
-    border: 2px solid #00203e;
+    border: 2px solid #003e2d;
     font-size: 1em;
 }
 
