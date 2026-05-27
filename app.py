@@ -73,6 +73,13 @@ def index():
 
             session["cart"] = cart # update session
             session.modified = True
+            
+        # prevent display mistake where the quantity of the flower in the cart is less than there is left
+        elif flowers[flower_item]["stock"] < cart[flower_item]["quantity"]:
+            cart[flower_item]["quantity"] = flowers[flower_item]["stock"]
+
+            session["cart"] = cart # update session
+            session.modified = True
 
     # calculate the overall total cost of all the items
     total, flower_subtotal, addon_subtotal, discounted_price = calculate_total(cart, session_addons)
@@ -110,7 +117,7 @@ def add_to_cart():
         }
 
     # check if there are stocks remaining within the flower
-    if flowers[flower]["stock"] == 0:
+    if flowers[flower]["stock"] <= 0:
         flash(f"Sorry, but {flower} runs out of stock.")
         del cart[flower]
         return redirect(url_for("index"))
